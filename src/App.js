@@ -1,48 +1,61 @@
-import './App.css';
-import React, {useState} from 'react';
-import {marked} from 'marked'
+import "./App.css";
+import React, { useState } from "react";
+import { marked } from "marked";
+import Docs from "./components/Docs";
+import useLocalStorage from "./hooks/useLocalStorage";
+import data from "./data/docsData.json";
+import markdownInitial from "./data/markdown";
 
 const App = () => {
-  const [code, setCode] = useState('## Hello')
-  const [compiled, setCompiled] = useState('<h2 id="hello">Hello</h2>')
-  const [hide, hidePreview] = useState(true)
+  const [code, setCode] = useLocalStorage("markdown", markdownInitial);
+  const [compiled, setCompiled] = useState(marked.parse(code));
+  const [view, setView] = useState("markdown"); // 'markdown', 'preview', 'docs'
 
-  const openMD = () => {
-    console.log(0)
-    hidePreview(true)
-  }
-
-  const openPreview = () => {
-    console.log(0)
-    hidePreview(false)
-  }
+  const markdownGuide = data;
 
   const handleChange = (e) => {
-    setCode(e.target.value)
-    setCompiled(marked.parse(e.target.value))
-  }
+    setCode(e.target.value);
+    setCompiled(marked.parse(e.target.value));
+  };
 
   return (
     <>
-      <h1>MarkDown Previewer React App</h1>
+      <h1 className="title">MarkDown Previewer React App</h1>
       <div className="container">
         <div className="btns">
-          <button onClick={openMD} className="btn">MarkDown</button>
-          <button onClick={openPreview}>Preview</button>
+          <button
+            className={`btn ${view === "markdown" ? "active" : ""}`}
+            onClick={() => setView("markdown")}
+          >
+            MarkDown
+          </button>
+          <button
+            className={`btn ${view === "preview" ? "active" : ""}`}
+            onClick={() => setView("preview")}
+          >
+            Preview
+          </button>
+          <button
+            className={`btn ${view === "docs" ? "active" : ""}`}
+            onClick={() => setView("docs")}
+          >
+            Docs
+          </button>
         </div>
-        {
-        hide ? 
-          <div>
-            <textarea onChange={handleChange} value={code}/>
-          </div> : 
-          <div>
-            <textarea value={compiled}/>
+        {view === "markdown" && (
+          <div className="markdown-tab-container">
+            <textarea onChange={handleChange} value={code} />
           </div>
-        }
+        )}
+        {view === "preview" && (
+          <div className="preview-tab-container">
+            <div dangerouslySetInnerHTML={{ __html: compiled }} />
+          </div>
+        )}
+        {view === "docs" && <Docs markdownGuide={markdownGuide} />}
       </div>
     </>
-  )
-}
-
+  );
+};
 
 export default App;
